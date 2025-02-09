@@ -1,50 +1,36 @@
-# Welcome to your Expo app 👋
+# react native logging demo
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This repo aims to explore logging possibilities in React Native. Several ideas:
 
-## Get started
+- filterable by feature, identified by folder
+- automatic determine filepath where log line was produced:
+  - extract info from new Error().stack?
+  - in dev mode: output from metro bundler?
+  - in release mode: use source maps? `npx expo export --dump-sourcemap`
+- flexible, easy exapndable transports, similar to how winston does it
+  - console
+  - asyncstorage (rotated)
+  - filesystem (rotated)
+  - external services e.g. datadog, sentry etc.
 
-1. Install dependencies
 
-   ```bash
-   npm install
-   ```
 
-2. Start the app
+## Use Stack trace
 
-   ```bash
-    npx expo start
-   ```
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+Dev mode stack line:
+```
+Error
+    at onPress (http://192.168.2.20:8081/app/(tabs)/explore.bundle//&platform=ios&hot=false&transform.engine=hermes&transform.bytecode=1&transform.routerRoot=app&unstable_transformProfile=hermes-stable&dev=true&minify=false&modulesOnly=true&runModule=false&shallow=true:43:47)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Learn more
+```
+import { SourceMap } from '@expo/source-map';
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+async function getOriginalPosition(sourceMapUrl, line, column) {
+  const sourceMap = await fetch(sourceMapUrl).then(r => r.json());
+  const map = await SourceMap.fromJSON(sourceMap);
+  return map.getOriginalPosition(line, column);
+}
+```
